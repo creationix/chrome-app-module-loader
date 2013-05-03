@@ -1,0 +1,8 @@
+{
+  "name": "chrome-app-module-loader",
+  "description": "A module loader that lets you load npm modules from a chrome app",
+  "version": "0.0.0",
+  "main": "module.js",
+  "author": "Tim Caswell <tim@creationix.com>",
+  "license": "MIT"
+}
