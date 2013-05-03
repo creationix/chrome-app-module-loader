@@ -26,12 +26,29 @@ If you want use the module system your background page, just create the script t
 }());
 ```
 
+## Modules
+
+Modules are authored using the commonJS format.  This means you file will be wrapped in a function.  You can declare top-level local variables and they won't leak to other modules.  Anything you want to export needs to be put on the `exports` object.  Alternatively you can outright replace `module.exports` with a new object or function.
+
+```js
+// An example exporting a single function
+module.exports = function (config) {
+  // code goes here
+  return {
+    // more code goes here
+  };
+}
+```
+
 ## Tips
 
 Since the loader loads your original scripts using XHR, it's best if it can guess the filenames on the first try.  A couple tips make this work better.
 
  - Always include the file extension when loading a plain `.js` file.  For example `require('./helper.js')` instead of `require('./helper')`.
  - When loading a package, never include the extension.
+ - Prefer `package.json` over `index.js` in packages.
+ - Use the `moduledir` directive if you want a flat dependency tree.
+ - Otherwise make sure every dependency is nested.
 
 ## Folder Resolution Rules
 
