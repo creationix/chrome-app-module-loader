@@ -3,7 +3,7 @@ chrome-app-module-loader
 
 A module loader that lets you load npm modules from a chrome app.
 
-To bootstrap, load module.js in a script tag.
+To bootstrap, load `module.js` in a script tag.
 
 ```html
 <script src="module.js" moduledir="/deps/" autorequire="/app/main.js"></script>
