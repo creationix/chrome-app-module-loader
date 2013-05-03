@@ -13,7 +13,7 @@ The `moduledir` attribute tells the loader where to load all package paths (path
 
 The `autorequire` attribute tells it what file to require first.  It will `require.async` this module and load all it's dependencies as soon as the module system is initialized.
 
-If you want use the module system your background page, just create the script tag using js.
+If you want use the module system your background page, just create the script tag manually using JavaScript.
 
 ```js
 (function () {
