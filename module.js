@@ -139,7 +139,7 @@ function resolve(root, path, callback, errback) {
   cycle();
   function cycle() {
     base = base.match(/^(.*\/)[^\/]*$/)[1];
-    find(base + "modules/" + path, success, function () {
+    find(base + "node_modules/" + path, success, function () {
       if (base.length > 1) {
         base = base.substr(0, base.length - 1);
         cycle();
