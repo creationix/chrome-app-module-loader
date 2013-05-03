@@ -398,9 +398,11 @@ function realRequireAsync(root, path, callback, errback) {
 
 function start(def) {
   var pathname = def.path;
+  var exports = modules[pathname];
+  if (exports) return exports;
   var dirname = pathname.match(/^(.*\/)[^\/]*$/)[1];
   var require = makeRequire(dirname);
-  var exports = {};
+  exports = {};
   var module = {exports: exports};
   delete defs[pathname];
   modules[pathname] = exports;
