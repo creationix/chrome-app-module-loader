@@ -9,7 +9,7 @@ To bootstrap, load `module.js` in a script tag.
 <script src="module.js" moduledir="/deps/" autorequire="/app/main.js"></script>
 ```
 
-The `moduledir` attribute tells the loader where to load all package paths (paths that don't start with `/` or `.`).  If it's left out, the loader will assume you used npm and look for ./node_modules, ../node_modules, ...
+The `moduledir` attribute tells the loader where to load all package paths (paths that don't start with `/` or `.`).  If it's left out, the loader will assume you used npm and look in `./node_modules/`, `../node_modules/`, etc...
 
 The `autorequire` attribute tells it what file to require first.  It will `require.async` this module and load all it's dependencies as soon as the module system is initialized.
 
