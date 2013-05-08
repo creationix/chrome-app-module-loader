@@ -119,7 +119,7 @@ function writeFile(path, contents, callback, errback) {
 // If paths starts with a `.`, then it's a relative require.
 // Otherwise it's a module path and we must search for it.
 // We also want to support optional extensions, loading json files, and
-// parsing package.json looking for main.
+// parsing package.json looking for browser-main or main.
 // callback(realPath, contents) or errback(err) are the output.
 var mappings = {};
 require.mappings = mappings;
@@ -174,10 +174,11 @@ function find(path, callback, errback) {
     try { doc = JSON.parse(json); }
     catch (err) { return errback(err); }
     // Abort if main is missing
-    if (!doc.main) {
+    var main = doc["browser-main"] || doc.main;
+    if (!main) {
       return errback(new Error("Missing main field in " + jsonPath));
     }
-    find(realPath(path + "/" + doc.main), callback, errback);
+    find(realPath(path + "/" + main), callback, errback);
   }, function () {
     get(path + "/index.js", callback, function () {
       get(path + ".js", callback, function () {
