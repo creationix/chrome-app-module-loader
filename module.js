@@ -178,7 +178,6 @@ function find(path, callback, errback) {
         from = realPath(path + "/" + from);
         aliases[from] = to;
       });
-      console.log(aliases);
     }
     var main = doc.main;
     if (!main) {
