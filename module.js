@@ -32,10 +32,12 @@ return require;
 // Get source files via XHR.
 // Protect calls to get to cache and not allow concurrent requests.
 // This I/O can be very expensive.
+var aliases = {};
 var files = {};
 var missing = {};
 var pendingGet = {};
 function get(path, callback, errback) {
+  if (path in aliases) path = aliases[path];
   if (path in files) return callback(path, files[path]);
   if (path in missing) return errback(missing[path]);
   if (path in pendingGet) return pendingGet[path].push([callback, errback]);
@@ -79,17 +81,13 @@ requestFileSystem(window.TEMPORARY, null, function (fileSystem) {
   var scripts = document.getElementsByTagName('script');
   for (var i = 0, l = scripts.length; i < l; i++) {
     if (autorequire) {
-      window.require.async(autorequire, function (err) {
-        if (err) throw err;
-      });
+      window.require.async(autorequire, onLoad);
     }
-  }
-  function onLoad(err) {
-    if (err) { throw err; }
   }
 }, function (fileError) {
   throw new Error("Unable to create temporary fs for module loader: " + fileError);
 });
+function onLoad(err) { if (err) throw err; }
 function writeFile(path, contents, callback, errback) {
   fs.root.getFile(path, {create: true}, function (fileEntry) {
     fileEntry.createWriter(function (fileWriter) {
@@ -174,7 +172,15 @@ function find(path, callback, errback) {
     try { doc = JSON.parse(json); }
     catch (err) { return errback(err); }
     // Abort if main is missing
-    var main = doc["browser-main"] || doc.main;
+    if (doc.browser) {
+      Object.keys(doc.browser).forEach(function (from) {
+        var to = realPath(path + "/" + doc.browser[from]);
+        from = realPath(path + "/" + from);
+        aliases[from] = to;
+      });
+      console.log(aliases);
+    }
+    var main = doc.main;
     if (!main) {
       return errback(new Error("Missing main field in " + jsonPath));
     }
@@ -254,7 +260,7 @@ function realProcess(path, contents, callback, errback) {
     if (--left) return;
     save();
   }
-  function check(dep) {
+  function check() {
     if (--left) return;
     save();
   }
@@ -267,7 +273,7 @@ function realProcess(path, contents, callback, errback) {
       defCallbacks[path] = function () {
         console.log("Loaded module", path);
         return callback.apply(this, arguments);
-      }
+      };
       var script = document.createElement('script');
       script.type = 'text/javascript';
       script.src = url;
