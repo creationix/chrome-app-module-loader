@@ -1,8 +1,12 @@
 {
   "name": "chrome-app-module-loader",
   "description": "A module loader that lets you load npm modules from a chrome app",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "module.js",
   "author": "Tim Caswell <tim@creationix.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/creationix/chrome-app-module-loader.git"
+  }
 }
