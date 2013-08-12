@@ -150,13 +150,13 @@ function resolve(root, path, callback, errback) {
 }
 function realPath(path) {
   var match;
-  // Remove /./ entries from path
+  // // Remove /./ entries from path
   while (match = path.match(/(\/)\.\//)) {
     path = path.replace(match[0], match[1]);
   }
   // Convert /foo/../ entries from path
-  while (match = path.match(/(\/[^\/]*\/)\.\.\//)) {
-    path = path.replace(match[0], match[1]);
+  while (match = path.match(/\/[^\/]+\/\.\.\//)) {
+    path = path.replace(match[0], "/");
   }
   return path;
 }
@@ -280,6 +280,10 @@ function realProcess(path, contents, callback, errback) {
     }, errback);
   }
 }
+
+
+
+
 // Mine a string for require calls and export the module names
 // Extract all require calls using a proper state-machine parser.
 function mine(js) {
@@ -288,89 +292,103 @@ function mine(js) {
   var ident;
   var quote;
   var name;
-  var states = [
-    // 0 - START
-    function (char) {
-      if (char === "/") state = 6;
-      else if (char === "'" || char === '"') {
-        quote = char;
-        state = 4;
-      }
-      else if (char === "r") {
-        ident = char;
-        state = 1;
-      }
-    },
-    // 1 - IDENT
-    function (char) {
-      if (char === "require"[ident.length]) {
-        ident += char;
-      }
-      else if (char === "(" && ident === "require") {
-        ident = undefined;
-        state = 2;
-      }
-      else {
-        state = 0;
-      }
-    },
-    // 2 - CALL
-    function (char) {
-      if (char === "'" || char === '"') {
-        quote = char;
-        name = "";
-        state = 3;
-      }
-      else {
-        state = 0;
-      }
-    },
-    // 3 - NAME
-    function (char) {
-      if (char === quote) {
-        names.push(name);
-        name = undefined;
-        state = 0;
-      }
-      else {
-        name += char;
-      }
-    },
-    // 4 - STRING
-    function (char) {
-      if (char === "\\") {
-        state = 5;
-      }
-      else if (char === quote) {
-        state = 0;
-      }
-    },
-    // 5 - ESCAPE
-    function (char) {
-      state = 4;
-    },
-    // 6 - SLASH
-    function (char) {
-      if (char === "/") state = 7;
-      else if (char === "*") state = 8;
-      else state = 0;
-    },
-    // 7 - LINE_COMMENT
-    function (char) {
-      if (char === "\r" || char === "\n") state = 0;
-    },
-    // 8 - MULTILINE_COMMENT
-    function (char) {
-      if (char === "*") state = 9;
-    },
-    // 9 - MULTILINE_ENDING
-    function (char) {
-      if (char === "/") state = 0;
-      else if (char !== "*") state = 8;
+
+  var isIdent = /[a-z0-9_.]/i;
+  var isWhitespace = /[ \r\n\t]/;
+
+  function $start(char) {
+    if (char === "/") {
+      return $slash;
     }
-  ];
+    if (char === "'" || char === '"') {
+      quote = char;
+      return $string;
+    }
+    if (isIdent.test(char)) {
+      ident = char;
+      return $ident;
+    }
+    return $start;
+  }
+
+  function $ident(char) {
+    if (isIdent.test(char)) {
+      ident += char;
+      return $ident;
+    }
+    if (char === "(" && ident === "require") {
+      ident = undefined;
+      return $call;
+    }
+    return $start(char);
+  }
+
+  function $call(char) {
+    if (isWhitespace.test(char)) return $call;
+    if (char === "'" || char === '"') {
+      quote = char;
+      name = "";
+      return $name;
+    }
+    return $start(char);
+  }
+
+  function $name(char) {
+    if (char === quote) {
+      return $close;
+    }
+    name += char;
+    return $name;
+  }
+
+  function $close(char) {
+    if (isWhitespace.test(char)) return $close;
+    if (char === ")" || char === ',') {
+      names.push(name);
+    }
+    name = undefined;
+    return $start(char);
+  }
+
+  function $string(char) {
+    if (char === "\\") {
+      return $escape;
+    }
+    if (char === quote) {
+      return $start;
+    }
+    return $string;
+  }
+
+  function $escape(char) {
+    return $string;
+  }
+
+  function $slash(char) {
+    if (char === "/") return $lineComment;
+    if (char === "*") return $multilineComment;
+    return $start(char);
+  }
+
+  function $lineComment(char) {
+    if (char === "\r" || char === "\n") return $start;
+    return $lineComment;
+  }
+
+  function $multilineComment(char) {
+    if (char === "*") return $multilineEnding;
+    return $multilineComment;
+  }
+
+  function $multilineEnding(char) {
+    if (char === "/") return $start;
+    if (char === "*") return $multilingEnding;
+    return $multilineComment;
+  }
+
+  var state = $start;
   for (var i = 0, l = js.length; i < l; i++) {
-    states[state](js[i]);
+    state = state(js[i]);
   }
   return names;
 }
