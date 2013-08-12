@@ -150,7 +150,7 @@ function resolve(root, path, callback, errback) {
 }
 function realPath(path) {
   var match;
-  // // Remove /./ entries from path
+  // Remove /./ entries from path
   while (match = path.match(/(\/)\.\//)) {
     path = path.replace(match[0], match[1]);
   }
