@@ -382,7 +382,7 @@ function mine(js) {
 
   function $multilineEnding(char) {
     if (char === "/") return $start;
-    if (char === "*") return $multilingEnding;
+    if (char === "*") return $multilineEnding;
     return $multilineComment;
   }
 
